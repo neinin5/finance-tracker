@@ -21,9 +21,9 @@ app.use(
     origin: allowedOrigins.includes('*')
       ? true
       : (origin, cb) => {
-          if (!origin || allowedOrigins.includes(origin)) cb(null, true)
-          else cb(new Error(`Origin ${origin} not allowed by CORS`))
-        }
+        if (!origin || allowedOrigins.includes(origin)) cb(null, true)
+        else cb(new Error(`Origin ${origin} not allowed by CORS`))
+      }
   })
 )
 app.use(express.json())
@@ -43,12 +43,20 @@ app.use((err, req, res, _next) => {
 
 const PORT = process.env.PORT || 3000
 
-await connectDB()
-app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`)
-  console.log(
-    `CORS allowed origins: ${
-      allowedOrigins.includes('*') ? 'any' : allowedOrigins.join(', ')
-    }`
-  )
-})
+try {
+  // ลองเชื่อมต่อ Database
+  await connectDB()
+
+  // ให้ bind กับ 0.0.0.0 ซึ่งสำคัญมากสำหรับการ Deploy บน Render
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API listening on port ${PORT}`)
+    console.log(
+      `CORS allowed origins: ${allowedOrigins.includes('*') ? 'any' : allowedOrigins.join(', ')
+      }`
+    )
+  })
+} catch (error) {
+  // ถ้าพัง มันจะพ่น Error ออกมาตรงนี้ให้เราเห็นใน Log ของ Render
+  console.error('🔥 Server Failed to Start:', error)
+  process.exit(1)
+}
