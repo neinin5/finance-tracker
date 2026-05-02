@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
+import { api } from '../api/client'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -19,7 +20,8 @@ const NAV_SECTIONS = [
     title: 'Tracking',
     items: [
       { name: 'All Records', to: '/expenses' },
-      { name: 'Trends', to: '/trends' }
+      { name: 'Trends', to: '/trends' },
+      { name: 'Calendar', to: '/calendar' }
     ]
   },
   {
@@ -36,12 +38,29 @@ const expanded = ref(
   Object.fromEntries(NAV_SECTIONS.map((s) => [s.title, true]))
 )
 
+const sendingEmail = ref(false)
+const emailMsg = ref('')
+
 function toggle(title) {
   expanded.value[title] = !expanded.value[title]
 }
 
 function handleNav() {
   ui.closeSidebar()
+}
+
+async function handleEmailSummary() {
+  sendingEmail.value = true
+  emailMsg.value = ''
+  try {
+    const r = await api('/notifications/weekly-summary', { method: 'POST' })
+    emailMsg.value = `Sent to ${r.recipient}`
+  } catch (err) {
+    emailMsg.value = err.message
+  } finally {
+    sendingEmail.value = false
+    setTimeout(() => (emailMsg.value = ''), 5000)
+  }
 }
 
 function handleLogout() {
@@ -56,7 +75,11 @@ function handleLogout() {
   <aside class="sidebar" :class="{ open: ui.sidebarOpen }">
     <div class="brand">
       <h1>UK Tracker</h1>
-      <button class="close-mobile" @click="ui.closeSidebar" aria-label="Close menu">
+      <button
+        class="close-mobile"
+        @click="ui.closeSidebar"
+        aria-label="Close menu"
+      >
         ×
       </button>
     </div>
@@ -86,6 +109,15 @@ function handleLogout() {
     </nav>
 
     <div class="footer">
+      <button class="footer-btn" @click="handleEmailSummary" :disabled="sendingEmail">
+        <span>{{ sendingEmail ? 'Sending…' : 'Email weekly summary' }}</span>
+      </button>
+      <p v-if="emailMsg" class="email-msg">{{ emailMsg }}</p>
+
+      <button class="footer-btn theme" @click="ui.toggleTheme">
+        <span>{{ ui.theme === 'dark' ? '☼ Light mode' : '☾ Dark mode' }}</span>
+      </button>
+
       <p class="user">{{ auth.user?.username }}</p>
       <button class="logout" @click="handleLogout">Log out</button>
     </div>
@@ -104,6 +136,9 @@ function handleLogout() {
   top: 0;
   flex-shrink: 0;
   overflow-y: auto;
+}
+[data-theme='dark'] .sidebar {
+  background: #0a1224;
 }
 .brand {
   padding: 1.5rem 1.25rem 1rem;
@@ -227,11 +262,44 @@ nav {
 .footer {
   padding: 1rem 1.25rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.footer-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d5db;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  text-align: center;
+}
+.footer-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+.footer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.footer-btn.theme {
+  margin-bottom: 0.4rem;
+}
+.email-msg {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  color: #a5b4fc;
+  text-align: center;
 }
 .user {
-  margin: 0 0 0.5rem;
+  margin: 0.5rem 0 0.4rem;
   font-size: 0.85rem;
   color: #9ca3af;
+  text-align: center;
 }
 .logout {
   width: 100%;

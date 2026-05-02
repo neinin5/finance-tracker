@@ -1,9 +1,30 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+
+const THEME_KEY = 'uk-tracker-theme'
+
+function detectTheme() {
+  const saved = localStorage.getItem(THEME_KEY)
+  if (saved === 'light' || saved === 'dark') return saved
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
+  }
+  return 'light'
+}
 
 export const useUiStore = defineStore('ui', () => {
   const addModalOpen = ref(false)
   const sidebarOpen = ref(false)
+  const theme = ref(detectTheme())
+
+  // Apply theme attribute and persist
+  document.documentElement.setAttribute('data-theme', theme.value)
+  watch(theme, (val) => {
+    document.documentElement.setAttribute('data-theme', val)
+    localStorage.setItem(THEME_KEY, val)
+  })
 
   function openAddModal() {
     addModalOpen.value = true
@@ -17,13 +38,18 @@ export const useUiStore = defineStore('ui', () => {
   function closeSidebar() {
     sidebarOpen.value = false
   }
+  function toggleTheme() {
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
+  }
 
   return {
     addModalOpen,
     sidebarOpen,
+    theme,
     openAddModal,
     closeAddModal,
     toggleSidebar,
-    closeSidebar
+    closeSidebar,
+    toggleTheme
   }
 })

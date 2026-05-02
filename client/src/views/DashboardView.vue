@@ -3,8 +3,10 @@ import { useUiStore } from '../stores/ui'
 import { useAuthStore } from '../stores/auth'
 import BalanceCard from '../components/BalanceCard.vue'
 import StatsRow from '../components/StatsRow.vue'
+import MonthComparison from '../components/MonthComparison.vue'
 import SpendingTrendChart from '../components/SpendingTrendChart.vue'
 import CategoryChart from '../components/CategoryChart.vue'
+import SpendingHeatmap from '../components/SpendingHeatmap.vue'
 import ExpenseList from '../components/ExpenseList.vue'
 
 const ui = useUiStore()
@@ -24,11 +26,10 @@ const auth = useAuthStore()
     <div class="stack">
       <BalanceCard />
       <StatsRow />
-
+      <MonthComparison />
       <SpendingTrendChart initial-period="D" initial-type="line" />
-
       <CategoryChart />
-
+      <SpendingHeatmap :weeks="26" />
       <ExpenseList :limit="10" title="Recent Expenses" />
     </div>
   </div>
@@ -46,11 +47,11 @@ const auth = useAuthStore()
 .page-head h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .page-head p {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 .primary {

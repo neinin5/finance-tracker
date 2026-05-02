@@ -5,6 +5,7 @@ import AppLayout from '../layouts/AppLayout.vue'
 import DashboardView from '../views/DashboardView.vue'
 import ExpensesView from '../views/ExpensesView.vue'
 import TrendsView from '../views/TrendsView.vue'
+import CalendarView from '../views/CalendarView.vue'
 import ExchangeRateView from '../views/ExchangeRateView.vue'
 import ImportView from '../views/ImportView.vue'
 
@@ -19,6 +20,7 @@ const routes = [
       { path: 'dashboard', name: 'dashboard', component: DashboardView },
       { path: 'expenses', name: 'expenses', component: ExpensesView },
       { path: 'trends', name: 'trends', component: TrendsView },
+      { path: 'calendar', name: 'calendar', component: CalendarView },
       {
         path: 'exchange-rate',
         name: 'exchange-rate',

@@ -30,3 +30,28 @@ export async function api(path, { method = 'GET', body, auth = true } = {}) {
   }
   return data
 }
+
+export async function download(path, filename) {
+  const headers = {}
+  const token = getToken()
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`${API_BASE}/api${path}`, { headers })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    let message = `Download failed (${res.status})`
+    try {
+      const parsed = JSON.parse(text)
+      if (parsed.error) message = parsed.error
+    } catch {}
+    throw new Error(message)
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
