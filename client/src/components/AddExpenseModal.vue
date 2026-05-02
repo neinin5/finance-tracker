@@ -3,7 +3,10 @@ import { ref, reactive, computed, watch } from 'vue'
 import Modal from './Modal.vue'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
-import { gbpToThb, formatTHB } from '../composables/useCurrency'
+import {
+  toGBP, gbpToThb, formatTHB, formatGBP,
+  SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS
+} from '../composables/useCurrency'
 
 const ui = useUiStore()
 const expenseStore = useExpensesStore()
@@ -26,17 +29,28 @@ const initialForm = () => ({
   date: today(),
   category: CATEGORIES[0],
   description: '',
-  amountGBP: ''
+  amount: '',
+  currency: 'GBP'
 })
 
 const form = reactive(initialForm())
 const submitting = ref(false)
 const error = ref('')
 
-const previewTHB = computed(() => {
-  const n = Number(form.amountGBP)
+const currencySymbol = computed(() => CURRENCY_SYMBOLS[form.currency] || '£')
+
+const previewGBP = computed(() => {
+  const n = Number(form.amount)
   if (!n || isNaN(n) || n <= 0) return null
-  return formatTHB(gbpToThb(n))
+  return toGBP(n, form.currency)
+})
+
+const previewText = computed(() => {
+  if (!previewGBP.value) return null
+  if (form.currency === 'GBP') {
+    return `≈ ${formatTHB(gbpToThb(previewGBP.value))}`
+  }
+  return `≈ ${formatGBP(previewGBP.value)} · ${formatTHB(gbpToThb(previewGBP.value))}`
 })
 
 watch(
@@ -50,7 +64,7 @@ watch(
 )
 
 async function handleSubmit() {
-  const amount = Number(form.amountGBP)
+  const amount = Number(form.amount)
   if (!amount || amount <= 0) {
     error.value = 'Please enter an amount greater than zero.'
     return
@@ -62,7 +76,9 @@ async function handleSubmit() {
       date: form.date,
       category: form.category,
       description: form.description.trim(),
-      amountGBP: amount
+      currency: form.currency,
+      amountOriginal: amount,
+      amountGBP: toGBP(amount, form.currency)
     })
     ui.closeAddModal()
   } catch (err) {
@@ -101,23 +117,34 @@ async function handleSubmit() {
         />
       </label>
 
-      <label>
-        Amount in GBP
-        <div class="input-with-prefix">
-          <span class="prefix">£</span>
-          <input
-            v-model="form.amountGBP"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            placeholder="0.00"
-            autofocus
-          />
-        </div>
-      </label>
+      <div class="amount-row">
+        <label class="amount-sublabel">
+          Currency
+          <select v-model="form.currency" class="currency-select">
+            <option v-for="c in SUPPORTED_CURRENCIES" :key="c" :value="c">
+              {{ CURRENCY_SYMBOLS[c] }} {{ c }}
+            </option>
+          </select>
+        </label>
 
-      <p v-if="previewTHB" class="preview">≈ {{ previewTHB }}</p>
+        <label class="amount-sublabel">
+          Amount
+          <div class="input-with-prefix">
+            <span class="prefix">{{ currencySymbol }}</span>
+            <input
+              v-model="form.amount"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              placeholder="0.00"
+              autofocus
+            />
+          </div>
+        </label>
+      </div>
+
+      <p v-if="previewText" class="preview">{{ previewText }}</p>
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">
@@ -161,12 +188,27 @@ select {
   width: 100%;
   background: var(--color-surface);
   color: var(--color-text);
+  box-sizing: border-box;
 }
 input:focus,
 select:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+.amount-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.75rem;
+  align-items: end;
+}
+.amount-sublabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 .input-with-prefix {
   position: relative;
@@ -178,6 +220,7 @@ select:focus {
   transform: translateY(-50%);
   color: var(--color-text-muted);
   font-weight: 500;
+  pointer-events: none;
 }
 .input-with-prefix input {
   padding-left: 1.85rem;
@@ -214,7 +257,7 @@ select:focus {
 .cancel {
   background: var(--color-surface);
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border) !important;
 }
 .cancel:hover:not(:disabled) {
   background: var(--color-surface-2);

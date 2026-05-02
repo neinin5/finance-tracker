@@ -2,6 +2,7 @@
 import { useUiStore } from '../stores/ui'
 import { useAuthStore } from '../stores/auth'
 import BalanceCard from '../components/BalanceCard.vue'
+import MonthlyBudgetCard from '../components/MonthlyBudgetCard.vue'
 import StatsRow from '../components/StatsRow.vue'
 import MonthComparison from '../components/MonthComparison.vue'
 import SpendingTrendChart from '../components/SpendingTrendChart.vue'
@@ -25,6 +26,7 @@ const auth = useAuthStore()
 
     <div class="stack">
       <BalanceCard />
+      <MonthlyBudgetCard />
       <StatsRow />
       <MonthComparison />
       <SpendingTrendChart initial-period="D" initial-type="line" />

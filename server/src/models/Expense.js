@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { SUPPORTED_CURRENCIES } from '../utils/currency.js'
 
 const expenseSchema = new mongoose.Schema({
   user: {
@@ -13,6 +14,8 @@ const expenseSchema = new mongoose.Schema({
   note: { type: String, default: '' },
   amountGBP: { type: Number, required: true, min: 0 },
   amountTHB: { type: Number, required: true, min: 0 },
+  currency: { type: String, enum: SUPPORTED_CURRENCIES, default: 'GBP' },
+  amountOriginal: { type: Number, required: true, min: 0 },
   source: { type: String, enum: ['manual', 'google-sheet'], default: 'manual' },
   externalId: { type: String, default: null },
   createdAt: { type: Date, default: Date.now }

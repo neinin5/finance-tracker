@@ -1,7 +1,7 @@
 import express from 'express'
 import Expense from '../models/Expense.js'
 import { authRequired } from '../middleware/auth.js'
-import { gbpToThb } from '../utils/currency.js'
+import { gbpToThb, toGBP } from '../utils/currency.js'
 
 const router = express.Router()
 
@@ -15,11 +15,17 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const { date, category, description, note, amountGBP } = req.body || {}
-  const gbp = Number(amountGBP)
-  if (!date || !category || !gbp || gbp <= 0) {
-    return res.status(400).json({ error: 'Date, category and amountGBP are required' })
+  const { date, category, description, note, amountGBP, currency, amountOriginal } = req.body || {}
+
+  // Support legacy amountGBP-only payloads as well as new multi-currency ones
+  const chosenCurrency = currency || 'GBP'
+  const originalAmount = Number(amountOriginal ?? amountGBP)
+
+  if (!date || !category || !originalAmount || originalAmount <= 0) {
+    return res.status(400).json({ error: 'Date, category and amount are required' })
   }
+
+  const gbp = toGBP(originalAmount, chosenCurrency)
   const expense = await Expense.create({
     user: req.userId,
     date,
@@ -28,6 +34,8 @@ router.post('/', async (req, res) => {
     note: note || '',
     amountGBP: gbp,
     amountTHB: gbpToThb(gbp),
+    currency: chosenCurrency,
+    amountOriginal: originalAmount,
     source: 'manual'
   })
   res.status(201).json(expense)

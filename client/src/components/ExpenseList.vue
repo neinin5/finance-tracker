@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useExpensesStore } from '../stores/expenses'
-import { formatTHB, formatGBP } from '../composables/useCurrency'
+import { formatTHB, formatGBP, formatCurrency } from '../composables/useCurrency'
 
 const props = defineProps({
   limit: { type: Number, default: null },
@@ -188,6 +188,9 @@ async function handleDelete(id) {
           </div>
           <div class="amount">
             <p class="gbp">{{ formatGBP(e.amountGBP) }}</p>
+            <p v-if="e.currency && e.currency !== 'GBP'" class="original">
+              {{ formatCurrency(e.amountOriginal, e.currency) }}
+            </p>
             <p class="thb">({{ formatTHB(e.amountTHB) }})</p>
           </div>
           <button
@@ -391,6 +394,12 @@ async function handleDelete(id) {
 .gbp {
   font-weight: 600;
   color: var(--color-text);
+}
+.original {
+  font-size: 0.78rem;
+  color: var(--color-accent);
+  margin-top: 0.1rem;
+  font-weight: 500;
 }
 .thb {
   font-size: 0.8rem;
