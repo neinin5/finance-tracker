@@ -57,7 +57,7 @@ onUnmounted(() => {
   backdrop-filter: blur(2px);
 }
 .modal {
-  background: white;
+  background: var(--color-surface);
   border-radius: 14px;
   width: 100%;
   max-width: 480px;
@@ -66,18 +66,19 @@ onUnmounted(() => {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--color-border);
 }
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.1rem 1.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border-light);
 }
 .header h2 {
   margin: 0;
   font-size: 1.05rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .close {
   background: transparent;
@@ -85,15 +86,15 @@ onUnmounted(() => {
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--color-text-faded);
   width: 32px;
   height: 32px;
   border-radius: 6px;
   font-family: inherit;
 }
 .close:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 .body {
   padding: 1.5rem;

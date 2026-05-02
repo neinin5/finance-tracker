@@ -45,7 +45,7 @@ onMounted(() => {
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #f3f4f6;
+  background: var(--color-bg);
 }
 .content {
   flex: 1;
@@ -58,8 +58,8 @@ onMounted(() => {
   top: 1rem;
   left: 1rem;
   z-index: 30;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -74,7 +74,7 @@ onMounted(() => {
   display: block;
   width: 18px;
   height: 2px;
-  background: #1f2937;
+  background: var(--color-text);
   border-radius: 2px;
 }
 .backdrop {

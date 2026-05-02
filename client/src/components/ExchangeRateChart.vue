@@ -89,6 +89,6 @@ const isEmpty = computed(() => store.rates.length === 0)
   height: 100%;
   display: grid;
   place-items: center;
-  color: #9ca3af;
+  color: var(--color-text-faded);
 }
 </style>

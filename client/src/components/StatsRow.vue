@@ -58,15 +58,16 @@ const stats = computed(() => {
   gap: 1rem;
 }
 .stat {
-  background: white;
+  background: var(--color-surface);
   padding: 1.25rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 .label {
   margin: 0 0 0.4rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -75,11 +76,11 @@ const stats = computed(() => {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .sub {
   margin: 0;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 </style>

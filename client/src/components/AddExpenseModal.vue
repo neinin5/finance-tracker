@@ -148,23 +148,24 @@ label {
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 input,
 select {
   padding: 0.6rem 0.8rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
   width: 100%;
-  background: white;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 input:focus,
 select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 .input-with-prefix {
@@ -175,7 +176,7 @@ select:focus {
   left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 .input-with-prefix input {
@@ -184,13 +185,13 @@ select:focus {
 .preview {
   margin: -0.25rem 0 0;
   font-size: 0.875rem;
-  color: #667eea;
+  color: var(--color-accent);
   font-weight: 500;
 }
 .error {
   margin: 0;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -211,12 +212,12 @@ select:focus {
   border: none;
 }
 .cancel {
-  background: white;
-  color: #4b5563;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
 }
 .cancel:hover:not(:disabled) {
-  background: #f9fafb;
+  background: var(--color-surface-2);
 }
 .save {
   background: #667eea;

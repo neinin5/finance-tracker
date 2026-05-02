@@ -104,11 +104,11 @@ async function handleImport() {
 .page-head h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .page-head p {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 .grid {
@@ -117,18 +117,19 @@ async function handleImport() {
   gap: 1.5rem;
 }
 .card {
-  background: white;
+  background: var(--color-surface);
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 .card h3 {
   margin: 0 0 0.5rem;
-  color: #1f2937;
+  color: var(--color-text);
   font-size: 1.1rem;
 }
 .desc {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   line-height: 1.5;
   margin: 0 0 1.25rem;
@@ -161,12 +162,12 @@ async function handleImport() {
   margin: 0;
 }
 .result.success {
-  background: #ecfdf5;
-  color: #047857;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 .result.error {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 .errors {
   margin: 0.5rem 0 0;
@@ -184,27 +185,27 @@ async function handleImport() {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border-light);
   padding-bottom: 0.4rem;
 }
 .stats > div:last-child {
   border-bottom: none;
 }
 .stats dt {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   margin: 0;
 }
 .stats dd {
   margin: 0;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text);
   font-size: 1.1rem;
 }
 .hint {
   margin: 1rem 0 0;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--color-text-faded);
   line-height: 1.5;
 }
 </style>

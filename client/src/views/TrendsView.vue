@@ -27,11 +27,11 @@ import CategoryChart from '../components/CategoryChart.vue'
 .page-head h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .page-head p {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   max-width: 60ch;
 }

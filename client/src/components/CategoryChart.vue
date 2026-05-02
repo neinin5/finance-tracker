@@ -64,7 +64,10 @@ const chartData = computed(() => {
         data: entries.map(([, v]) => thbToGbp(v)),
         backgroundColor: COLORS.slice(0, entries.length),
         borderWidth: isBar ? 0 : 2,
-        borderColor: 'white',
+        borderColor:
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--color-surface'
+          ) || 'white',
         borderRadius: isBar ? 6 : 0
       }
     ]
@@ -139,10 +142,11 @@ const isEmpty = computed(() => store.expenses.length === 0)
 
 <style scoped>
 .card {
-  background: white;
+  background: var(--color-surface);
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 .head {
   display: flex;
@@ -154,12 +158,12 @@ const isEmpty = computed(() => store.expenses.length === 0)
 }
 .head h3 {
   margin: 0;
-  color: #1f2937;
+  color: var(--color-text);
   font-size: 1.1rem;
 }
 .seg {
   display: flex;
-  background: #f3f4f6;
+  background: var(--color-surface-3);
   border-radius: 8px;
   padding: 0.2rem;
   gap: 0.15rem;
@@ -172,13 +176,13 @@ const isEmpty = computed(() => store.expenses.length === 0)
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-family: inherit;
 }
 .seg button.active {
-  background: white;
-  color: #1f2937;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
 }
 .chart-wrap {
   height: 320px;
@@ -188,6 +192,6 @@ const isEmpty = computed(() => store.expenses.length === 0)
   height: 100%;
   display: grid;
   place-items: center;
-  color: #9ca3af;
+  color: var(--color-text-faded);
 }
 </style>

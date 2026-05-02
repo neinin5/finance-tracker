@@ -81,11 +81,11 @@ function changeDays(n) {
 .page-head h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .page-head p {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 .summary {
@@ -95,15 +95,16 @@ function changeDays(n) {
   margin-bottom: 1.5rem;
 }
 .card {
-  background: white;
+  background: var(--color-surface);
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 .card .label {
   margin: 0 0 0.5rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -112,15 +113,15 @@ function changeDays(n) {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .card .value.muted {
-  color: #9ca3af;
+  color: var(--color-text-faded);
 }
 .card .meta {
   margin: 0.4rem 0 0;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--color-text-faded);
 }
 .change {
   margin: 0.5rem 0 0;
@@ -151,12 +152,12 @@ function changeDays(n) {
 .chart-head h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--color-text);
 }
 .ranges {
   display: flex;
   gap: 0.25rem;
-  background: #f3f4f6;
+  background: var(--color-surface-3);
   padding: 0.2rem;
   border-radius: 8px;
 }
@@ -168,18 +169,18 @@ function changeDays(n) {
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-family: inherit;
 }
 .ranges button.active {
-  background: white;
-  color: #1f2937;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
 }
 .footer-note {
   margin: 0.75rem 0 0;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-faded);
   text-align: right;
 }
 </style>
