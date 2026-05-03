@@ -9,6 +9,8 @@ import CalendarView from '../views/CalendarView.vue'
 import ExchangeRateView from '../views/ExchangeRateView.vue'
 import ImportView from '../views/ImportView.vue'
 import SplitView from '../views/SplitView.vue'
+import BackupsView from '../views/BackupsView.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView },
@@ -28,7 +30,9 @@ const routes = [
         component: ExchangeRateView
       },
       { path: 'import', name: 'import', component: ImportView },
-      { path: 'split', name: 'split', component: SplitView }
+      { path: 'split', name: 'split', component: SplitView },
+      { path: 'backups', name: 'backups', component: BackupsView },
+      { path: 'settings', name: 'settings', component: SettingsView }
     ]
   }
 ]

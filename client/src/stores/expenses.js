@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '../api/client'
 import { EXCHANGE_RATE_THB_PER_GBP } from '../composables/useCurrency'
-
-const INITIAL_FUND_THB = 1_500_000
+import { useAuthStore } from './auth'
 
 function weekStartISO(dateStr) {
   const d = new Date(dateStr + 'T00:00:00Z')
@@ -18,17 +17,19 @@ export const useExpensesStore = defineStore('expenses', () => {
   const loading = ref(false)
   const error = ref(null)
 
+  const auth = useAuthStore()
+  const initialFundTHB = computed(() => auth.user?.initialFundTHB ?? 1_500_000)
+  const exchangeRate = computed(() => auth.user?.exchangeRate ?? EXCHANGE_RATE_THB_PER_GBP)
+
   const totalSpentTHB = computed(() =>
     expenses.value.reduce((sum, e) => sum + e.amountTHB, 0)
   )
   const totalSpentGBP = computed(() =>
     expenses.value.reduce((sum, e) => sum + e.amountGBP, 0)
   )
-  const remainingTHB = computed(() => INITIAL_FUND_THB - totalSpentTHB.value)
-  const remainingGBP = computed(
-    () => remainingTHB.value / EXCHANGE_RATE_THB_PER_GBP
-  )
-  const initialFundGBP = INITIAL_FUND_THB / EXCHANGE_RATE_THB_PER_GBP
+  const remainingTHB = computed(() => initialFundTHB.value - totalSpentTHB.value)
+  const remainingGBP = computed(() => remainingTHB.value / exchangeRate.value)
+  const initialFundGBP = computed(() => initialFundTHB.value / exchangeRate.value)
 
   const spentByCategory = computed(() => {
     const byCategory = {}
@@ -112,9 +113,9 @@ export const useExpensesStore = defineStore('expenses', () => {
     expenses,
     loading,
     error,
-    initialFundTHB: INITIAL_FUND_THB,
+    initialFundTHB,
     initialFundGBP,
-    exchangeRate: EXCHANGE_RATE_THB_PER_GBP,
+    exchangeRate,
     totalSpentTHB,
     totalSpentGBP,
     remainingTHB,

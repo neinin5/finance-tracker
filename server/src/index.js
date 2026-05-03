@@ -9,6 +9,7 @@ import exchangeRateRoutes from './routes/exchangeRate.js'
 import exportRoutes from './routes/export.js'
 import notificationRoutes from './routes/notifications.js'
 import budgetRoutes from './routes/budget.js'
+import backupRoutes from './routes/backups.js'
 
 const app = express()
 
@@ -37,6 +38,7 @@ app.use('/api/exchange-rate', exchangeRateRoutes)
 app.use('/api/export', exportRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/budget', budgetRoutes)
+app.use('/api/backups', backupRoutes)
 
 app.use((err, req, res, _next) => {
   console.error(err)

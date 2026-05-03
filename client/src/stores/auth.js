@@ -59,6 +59,27 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
+  async function updateSettings(patch) {
+    const updated = await api('/auth/settings', { method: 'PATCH', body: patch })
+    user.value = updated
+    return updated
+  }
+
+  async function changePassword(currentPassword, newPassword) {
+    return api('/auth/password', {
+      method: 'POST',
+      body: { currentPassword, newPassword }
+    })
+  }
+
+  async function clearAllExpenses() {
+    return api('/auth/expenses', { method: 'DELETE' })
+  }
+
+  async function deleteAccount(password) {
+    return api('/auth/account', { method: 'DELETE', body: { password } })
+  }
+
   return {
     user,
     isAuthenticated,
@@ -67,6 +88,10 @@ export const useAuthStore = defineStore('auth', () => {
     bootstrap,
     setup,
     login,
-    logout
+    logout,
+    updateSettings,
+    changePassword,
+    clearAllExpenses,
+    deleteAccount
   }
 })

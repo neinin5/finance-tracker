@@ -35,7 +35,8 @@ function handleKey(e) {
     clearTimeout(gTimer)
     const map = {
       d: '/dashboard', s: '/split', e: '/expenses',
-      t: '/trends', c: '/calendar', r: '/exchange-rate', i: '/import'
+      t: '/trends', c: '/calendar', r: '/exchange-rate',
+      i: '/import', b: '/backups', x: '/settings'
     }
     const path = map[e.key.toLowerCase()]
     if (path) router.push(path)

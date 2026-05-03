@@ -35,7 +35,14 @@ const NAV_SECTIONS = [
   },
   {
     title: 'Tools',
-    items: [{ name: 'Import Data', to: '/import' }]
+    items: [
+      { name: 'Import Data', to: '/import' },
+      { name: 'Backups', to: '/backups' }
+    ]
+  },
+  {
+    title: 'Account',
+    items: [{ name: 'Settings', to: '/settings' }]
   }
 ]
 
