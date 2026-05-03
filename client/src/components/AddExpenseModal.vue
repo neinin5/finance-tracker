@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, defineAsyncComponent } from 'vue'
 import Modal from './Modal.vue'
+const LocationPicker = defineAsyncComponent(() => import('./LocationPicker.vue'))
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
 import { useToastStore } from '../stores/toast'
@@ -32,7 +33,8 @@ const initialForm = () => ({
   category: CATEGORIES[0],
   description: '',
   amount: '',
-  currency: 'GBP'
+  currency: 'GBP',
+  location: null
 })
 
 const form = reactive(initialForm())
@@ -80,7 +82,8 @@ async function handleSubmit() {
       description: form.description.trim(),
       currency: form.currency,
       amountOriginal: amount,
-      amountGBP: toGBP(amount, form.currency)
+      amountGBP: toGBP(amount, form.currency),
+      location: form.location || undefined
     })
     const gbpAmt = toGBP(amount, form.currency)
     toast.success(`Added ${formatGBP(gbpAmt)} to ${form.category}`)
@@ -150,6 +153,9 @@ async function handleSubmit() {
       </div>
 
       <p v-if="previewText" class="preview">{{ previewText }}</p>
+
+      <LocationPicker v-model="form.location" />
+
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">

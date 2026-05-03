@@ -18,6 +18,13 @@ const expenseSchema = new mongoose.Schema({
   amountOriginal: { type: Number, required: true, min: 0 },
   source: { type: String, enum: ['manual', 'google-sheet'], default: 'manual' },
   externalId: { type: String, default: null },
+  location: {
+    name: { type: String, default: '' },
+    address: { type: String, default: '' },
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+    placeId: { type: String, default: '' }
+  },
   createdAt: { type: Date, default: Date.now }
 })
 

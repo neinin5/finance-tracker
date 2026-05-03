@@ -26,7 +26,8 @@ const NAV_SECTIONS = [
     items: [
       { name: 'All Records', to: '/expenses' },
       { name: 'Trends', to: '/trends' },
-      { name: 'Calendar', to: '/calendar' }
+      { name: 'Calendar', to: '/calendar' },
+      { name: 'Map', to: '/map' }
     ]
   },
   {

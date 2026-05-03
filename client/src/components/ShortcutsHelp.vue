@@ -9,6 +9,7 @@ const shortcuts = [
   { keys: ['G', 'E'], desc: 'Go to Expenses' },
   { keys: ['G', 'T'], desc: 'Go to Trends' },
   { keys: ['G', 'C'], desc: 'Go to Calendar' },
+  { keys: ['G', 'M'], desc: 'Go to Map' },
   { keys: ['G', 'B'], desc: 'Go to Backups' },
   { keys: ['G', 'X'], desc: 'Go to Settings' },
   { keys: ['T'], desc: 'Toggle dark mode' },

@@ -11,6 +11,8 @@ import ImportView from '../views/ImportView.vue'
 import SplitView from '../views/SplitView.vue'
 import BackupsView from '../views/BackupsView.vue'
 import SettingsView from '../views/SettingsView.vue'
+// MapView lazy-loaded — pulls in Leaflet (~150KB) only when needed
+const MapView = () => import('../views/MapView.vue')
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView },
@@ -32,7 +34,8 @@ const routes = [
       { path: 'import', name: 'import', component: ImportView },
       { path: 'split', name: 'split', component: SplitView },
       { path: 'backups', name: 'backups', component: BackupsView },
-      { path: 'settings', name: 'settings', component: SettingsView }
+      { path: 'settings', name: 'settings', component: SettingsView },
+      { path: 'map', name: 'map', component: MapView }
     ]
   }
 ]

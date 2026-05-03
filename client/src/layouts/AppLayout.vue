@@ -36,7 +36,7 @@ function handleKey(e) {
     const map = {
       d: '/dashboard', s: '/split', e: '/expenses',
       t: '/trends', c: '/calendar', r: '/exchange-rate',
-      i: '/import', b: '/backups', x: '/settings'
+      i: '/import', b: '/backups', x: '/settings', m: '/map'
     }
     const path = map[e.key.toLowerCase()]
     if (path) router.push(path)

@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const { date, category, description, note, amountGBP, currency, amountOriginal } = req.body || {}
+  const { date, category, description, note, amountGBP, currency, amountOriginal, location } = req.body || {}
 
   // Support legacy amountGBP-only payloads as well as new multi-currency ones
   const chosenCurrency = currency || 'GBP'
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
   }
 
   const gbp = toGBP(originalAmount, chosenCurrency)
-  const expense = await Expense.create({
+  const doc = {
     user: req.userId,
     date,
     category,
@@ -37,7 +37,19 @@ router.post('/', async (req, res) => {
     currency: chosenCurrency,
     amountOriginal: originalAmount,
     source: 'manual'
-  })
+  }
+
+  if (location && (location.lat != null || location.placeId)) {
+    doc.location = {
+      name: String(location.name || '').slice(0, 200),
+      address: String(location.address || '').slice(0, 300),
+      lat: location.lat != null ? Number(location.lat) : null,
+      lng: location.lng != null ? Number(location.lng) : null,
+      placeId: String(location.placeId || '')
+    }
+  }
+
+  const expense = await Expense.create(doc)
   res.status(201).json(expense)
 })
 

@@ -52,7 +52,7 @@ onUnmounted(() => {
   background: rgba(15, 23, 42, 0.55);
   display: grid;
   place-items: center;
-  z-index: 50;
+  z-index: 10000;
   padding: 1rem;
   backdrop-filter: blur(2px);
 }
