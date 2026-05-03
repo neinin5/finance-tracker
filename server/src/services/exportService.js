@@ -2,6 +2,12 @@ import { stringify } from 'csv-stringify/sync'
 import PDFDocument from 'pdfkit'
 import Expense from '../models/Expense.js'
 import { gbpToThb } from '../utils/currency.js'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const FONT_REGULAR = path.join(__dirname, '../fonts/Sarabun-Regular.ttf')
+const FONT_BOLD    = path.join(__dirname, '../fonts/Sarabun-Bold.ttf')
 
 function formatGBP(n) {
   return '£' + Number(n).toFixed(2)
@@ -45,14 +51,17 @@ export async function buildPdf(userId, username) {
   const remainingGBP = remainingTHB / 45
 
   const doc = new PDFDocument({ size: 'A4', margin: 40 })
+  // Register Thai-capable fonts so Thai script renders correctly
+  doc.registerFont('Thai', FONT_REGULAR)
+  doc.registerFont('Thai-Bold', FONT_BOLD)
   const chunks = []
   doc.on('data', (c) => chunks.push(c))
 
   // Header
-  doc.fontSize(20).fillColor('#1f2937').text('UK Finance Tracker', { align: 'left' })
-  doc.fontSize(10).fillColor('#6b7280').text('Expense Report', { align: 'left' })
+  doc.font('Thai-Bold').fontSize(20).fillColor('#1f2937').text('UK Finance Tracker', { align: 'left' })
+  doc.font('Thai').fontSize(10).fillColor('#6b7280').text('Expense Report', { align: 'left' })
   doc.moveDown(0.5)
-  doc.fontSize(9).fillColor('#9ca3af').text(
+  doc.font('Thai').fontSize(9).fillColor('#9ca3af').text(
     `Account: ${username || 'unknown'}  ·  Generated: ${new Date().toLocaleString('en-GB')}`
   )
   doc.moveDown(1)
@@ -60,7 +69,7 @@ export async function buildPdf(userId, username) {
   // Summary box
   const summaryY = doc.y
   doc.rect(40, summaryY, 515, 70).fillAndStroke('#f3f4f6', '#e5e7eb')
-  doc.fillColor('#1f2937').fontSize(10)
+  doc.font('Thai').fillColor('#1f2937').fontSize(10)
   doc.text('Total spent', 55, summaryY + 12)
   doc.fontSize(13).text(`${formatGBP(totalGBP)}  (${formatTHB(totalTHB)})`, 55, summaryY + 28)
   doc.fontSize(10).fillColor('#1f2937').text('Remaining balance', 280, summaryY + 12)
@@ -72,7 +81,7 @@ export async function buildPdf(userId, username) {
   doc.x = 40
 
   // Table header
-  doc.fontSize(11).fillColor('#1f2937').text('Expenses', { underline: false })
+  doc.font('Thai').fontSize(11).fillColor('#1f2937').text('Expenses', { underline: false })
   doc.moveDown(0.3)
 
   const cols = [
@@ -86,17 +95,17 @@ export async function buildPdf(userId, username) {
   function drawHeader() {
     const y = doc.y
     doc.rect(40, y - 2, 515, 18).fill('#f9fafb')
-    doc.fillColor('#374151').fontSize(9).font('Helvetica-Bold')
+    doc.fillColor('#374151').fontSize(9).font('Thai-Bold')
     cols.forEach((c) => {
       doc.text(c.label, c.x + 4, y + 2, { width: c.w - 8, align: c.align || 'left' })
     })
-    doc.font('Helvetica')
+    doc.font('Thai')
     doc.y = y + 18
   }
   drawHeader()
 
   // Rows
-  doc.fontSize(8.5).fillColor('#1f2937')
+  doc.font('Thai').fontSize(8.5).fillColor('#1f2937')
   for (const e of expenses) {
     if (doc.y > 770) {
       doc.addPage()
