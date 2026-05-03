@@ -48,4 +48,14 @@ router.put('/', async (req, res, next) => {
   }
 })
 
+// DELETE /api/budget — clear the monthly limit
+router.delete('/', async (req, res, next) => {
+  try {
+    await Budget.findOneAndDelete({ user: req.userId })
+    res.json({ monthlyLimitGBP: null })
+  } catch (err) {
+    next(err)
+  }
+})
+
 export default router

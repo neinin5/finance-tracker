@@ -57,6 +57,20 @@ export const useBudgetStore = defineStore('budget', () => {
     }
   }
 
+  async function resetBudget() {
+    saving.value = true
+    error.value = null
+    try {
+      await api('/budget', { method: 'DELETE' })
+      monthlyLimitGBP.value = null
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      saving.value = false
+    }
+  }
+
   /** Refresh spent amount from the expenses store (avoids extra API call) */
   function syncFromExpenses() {
     const store = useExpensesStore()
@@ -80,6 +94,7 @@ export const useBudgetStore = defineStore('budget', () => {
     overBudget,
     fetchBudget,
     saveBudget,
+    resetBudget,
     syncFromExpenses
   }
 })

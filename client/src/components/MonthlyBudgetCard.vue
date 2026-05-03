@@ -2,10 +2,12 @@
 import { ref, watch, onMounted } from 'vue'
 import { useBudgetStore } from '../stores/budget'
 import { useExpensesStore } from '../stores/expenses'
+import { useToastStore } from '../stores/toast'
 import { formatGBP } from '../composables/useCurrency'
 
 const budget = useBudgetStore()
 const expenses = useExpensesStore()
+const toast = useToastStore()
 
 const editing = ref(false)
 const inputValue = ref('')
@@ -50,6 +52,17 @@ function cancelEdit() {
   saveError.value = ''
 }
 
+async function resetLimit() {
+  if (!confirm('Reset the monthly budget? This will clear the current limit.')) return
+  try {
+    await budget.resetBudget()
+    editing.value = false
+    toast.success('Monthly budget reset')
+  } catch (err) {
+    toast.error(err.message || 'Failed to reset budget')
+  }
+}
+
 function monthLabel(monthStr) {
   if (!monthStr) return ''
   const [y, m] = monthStr.split('-')
@@ -67,9 +80,20 @@ function monthLabel(monthStr) {
         <h2>Monthly Budget</h2>
         <p class="sub">{{ monthLabel(budget.currentMonth) }}</p>
       </div>
-      <button v-if="!editing" class="edit-btn" @click="startEdit">
-        {{ budget.monthlyLimitGBP !== null ? 'Edit limit' : 'Set limit' }}
-      </button>
+      <div v-if="!editing" class="header-actions">
+        <button class="edit-btn" @click="startEdit">
+          {{ budget.monthlyLimitGBP !== null ? 'Edit limit' : 'Set limit' }}
+        </button>
+        <button
+          v-if="budget.monthlyLimitGBP !== null"
+          class="reset-btn"
+          :disabled="budget.saving"
+          @click="resetLimit"
+          title="Clear monthly budget"
+        >
+          Reset
+        </button>
+      </div>
     </div>
 
     <!-- Edit mode -->
@@ -176,6 +200,31 @@ function monthLabel(monthStr) {
   color: var(--color-text);
   background: var(--color-surface);
 }
+.header-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-error-text);
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.reset-btn:hover:not(:disabled) {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-text);
+}
+.reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .edit-form {
   margin-bottom: 0.5rem;
 }
@@ -202,10 +251,10 @@ function monthLabel(monthStr) {
 .edit-row input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 187, 119, 0.15);
 }
 .save-btn {
-  background: #667eea;
+  background: #00bb77;
   color: white;
   border: none;
   padding: 0.55rem 1rem;
@@ -276,7 +325,7 @@ function monthLabel(monthStr) {
 }
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #00bb77, #008855);
   border-radius: 999px;
   transition: width 0.4s ease;
 }

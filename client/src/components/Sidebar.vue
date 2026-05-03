@@ -4,12 +4,14 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
+import { useToastStore } from '../stores/toast'
 import { api } from '../api/client'
 
 const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
 const expenseStore = useExpensesStore()
+const toast = useToastStore()
 
 const NAV_SECTIONS = [
   {
@@ -58,8 +60,10 @@ async function handleEmailSummary() {
   try {
     const r = await api('/notifications/weekly-summary', { method: 'POST' })
     emailMsg.value = `Sent to ${r.recipient}`
+    toast.success(`Weekly summary sent to ${r.recipient}`)
   } catch (err) {
     emailMsg.value = err.message
+    toast.error(err.message)
   } finally {
     sendingEmail.value = false
     setTimeout(() => (emailMsg.value = ''), 5000)
@@ -77,7 +81,10 @@ function handleLogout() {
 <template>
   <aside class="sidebar" :class="{ open: ui.sidebarOpen }">
     <div class="brand">
-      <h1>UK Tracker</h1>
+      <div class="logo-wrap">
+        <div class="logo-mark">UWE</div>
+        <h1>Finance Tracker</h1>
+      </div>
       <button
         class="close-mobile"
         @click="ui.closeSidebar"
@@ -130,7 +137,7 @@ function handleLogout() {
 <style scoped>
 .sidebar {
   width: 240px;
-  background: #1f2937;
+  background: #231F20;
   color: #e5e7eb;
   display: flex;
   flex-direction: column;
@@ -141,7 +148,7 @@ function handleLogout() {
   overflow-y: auto;
 }
 [data-theme='dark'] .sidebar {
-  background: #0a1224;
+  background: #07120c;
 }
 .brand {
   padding: 1.5rem 1.25rem 1rem;
@@ -149,15 +156,28 @@ function handleLogout() {
   justify-content: space-between;
   align-items: center;
 }
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.logo-mark {
+  background: #E62333;
+  color: white;
+  font-weight: 900;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(230, 35, 51, 0.4);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
 .brand h1 {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
-  background: linear-gradient(90deg, #a5b4fc, #f0abfc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #f5f5f5;
 }
 .close-mobile {
   display: none;
@@ -171,7 +191,7 @@ function handleLogout() {
 .add-record {
   margin: 0 1rem 1rem;
   padding: 0.7rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00bb77, #008855);
   color: white;
   border: none;
   border-radius: 8px;
@@ -258,9 +278,11 @@ nav {
   color: white;
 }
 .items a.router-link-active {
-  background: rgba(102, 126, 234, 0.18);
+  background: rgba(0, 187, 119, 0.2);
   color: white;
   font-weight: 500;
+  border-left: 3px solid #00bb77;
+  padding-left: calc(0.85rem - 3px);
 }
 .footer {
   padding: 1rem 1.25rem;
@@ -295,7 +317,7 @@ nav {
 .email-msg {
   margin: 0 0 0.25rem;
   font-size: 0.7rem;
-  color: #a5b4fc;
+  color: #2ddb95;
   text-align: center;
 }
 .user {

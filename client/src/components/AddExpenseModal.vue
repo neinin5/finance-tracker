@@ -3,6 +3,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import Modal from './Modal.vue'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
+import { useToastStore } from '../stores/toast'
 import {
   toGBP, gbpToThb, formatTHB, formatGBP,
   SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS
@@ -10,6 +11,7 @@ import {
 
 const ui = useUiStore()
 const expenseStore = useExpensesStore()
+const toast = useToastStore()
 
 const CATEGORIES = [
   'Food & Groceries',
@@ -80,9 +82,12 @@ async function handleSubmit() {
       amountOriginal: amount,
       amountGBP: toGBP(amount, form.currency)
     })
+    const gbpAmt = toGBP(amount, form.currency)
+    toast.success(`Added ${formatGBP(gbpAmt)} to ${form.category}`)
     ui.closeAddModal()
   } catch (err) {
     error.value = err.message || 'Could not save the expense.'
+    toast.error(error.value)
   } finally {
     submitting.value = false
   }
@@ -194,7 +199,7 @@ input:focus,
 select:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 187, 119, 0.15);
 }
 .amount-row {
   display: grid;
@@ -263,11 +268,11 @@ select:focus {
   background: var(--color-surface-2);
 }
 .save {
-  background: #667eea;
+  background: #00bb77;
   color: white;
 }
 .save:hover:not(:disabled) {
-  background: #5568d3;
+  background: #008855;
 }
 .actions button:disabled {
   opacity: 0.6;

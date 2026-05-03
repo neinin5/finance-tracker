@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { useExpensesStore } from '../stores/expenses'
 import { formatTHB, formatGBP } from '../composables/useCurrency'
+import { useAnimatedNumber } from '../composables/useAnimatedNumber'
 
 const store = useExpensesStore()
 
@@ -9,6 +10,11 @@ const usedPercent = computed(() =>
   Math.min(100, Math.max(0, (store.totalSpentTHB / store.initialFundTHB) * 100))
 )
 const usedPercentDisplay = computed(() => usedPercent.value.toFixed(1))
+
+const remainingGBPRef = toRef(store, 'remainingGBP')
+const remainingTHBRef = toRef(store, 'remainingTHB')
+const animatedGBP = useAnimatedNumber(remainingGBPRef, { duration: 900 })
+const animatedTHB = useAnimatedNumber(remainingTHBRef, { duration: 900 })
 </script>
 
 <template>
@@ -19,8 +25,8 @@ const usedPercentDisplay = computed(() => usedPercent.value.toFixed(1))
     </div>
 
     <div class="amounts">
-      <div class="primary">{{ formatGBP(store.remainingGBP) }}</div>
-      <div class="secondary">({{ formatTHB(store.remainingTHB) }})</div>
+      <div class="primary">{{ formatGBP(animatedGBP) }}</div>
+      <div class="secondary">({{ formatTHB(animatedTHB) }})</div>
     </div>
 
     <div class="progress" :title="`${usedPercentDisplay}% used`">
@@ -40,11 +46,11 @@ const usedPercentDisplay = computed(() => usedPercent.value.toFixed(1))
 
 <style scoped>
 .balance-card {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00bb77, #008855);
   color: white;
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 187, 119, 0.3);
 }
 .header {
   display: flex;

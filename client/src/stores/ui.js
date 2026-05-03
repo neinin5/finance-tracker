@@ -17,39 +17,34 @@ function detectTheme() {
 export const useUiStore = defineStore('ui', () => {
   const addModalOpen = ref(false)
   const sidebarOpen = ref(false)
+  const shortcutsOpen = ref(false)
   const theme = ref(detectTheme())
 
-  // Apply theme attribute and persist
   document.documentElement.setAttribute('data-theme', theme.value)
   watch(theme, (val) => {
     document.documentElement.setAttribute('data-theme', val)
     localStorage.setItem(THEME_KEY, val)
   })
 
-  function openAddModal() {
-    addModalOpen.value = true
-  }
-  function closeAddModal() {
-    addModalOpen.value = false
-  }
-  function toggleSidebar() {
-    sidebarOpen.value = !sidebarOpen.value
-  }
-  function closeSidebar() {
-    sidebarOpen.value = false
-  }
-  function toggleTheme() {
-    theme.value = theme.value === 'light' ? 'dark' : 'light'
-  }
+  function openAddModal() { addModalOpen.value = true }
+  function closeAddModal() { addModalOpen.value = false }
+  function toggleSidebar() { sidebarOpen.value = !sidebarOpen.value }
+  function closeSidebar() { sidebarOpen.value = false }
+  function openShortcuts() { shortcutsOpen.value = true }
+  function closeShortcuts() { shortcutsOpen.value = false }
+  function toggleTheme() { theme.value = theme.value === 'light' ? 'dark' : 'light' }
 
   return {
     addModalOpen,
     sidebarOpen,
+    shortcutsOpen,
     theme,
     openAddModal,
     closeAddModal,
     toggleSidebar,
     closeSidebar,
+    openShortcuts,
+    closeShortcuts,
     toggleTheme
   }
 })

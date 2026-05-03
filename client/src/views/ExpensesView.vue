@@ -101,7 +101,7 @@ async function handleExport(format) {
 }
 .primary {
   padding: 0.6rem 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00bb77, #008855);
   color: white;
   border: none;
   border-radius: 8px;

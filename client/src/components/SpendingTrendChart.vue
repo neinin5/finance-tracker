@@ -120,8 +120,8 @@ const chartData = computed(() => {
       {
         label: 'Spending',
         data: buckets.value.map((b) => thbToGbp(b.value)),
-        borderColor: '#667eea',
-        backgroundColor: isArea ? 'rgba(102, 126, 234, 0.18)' : '#667eea',
+        borderColor: '#00bb77',
+        backgroundColor: isArea ? 'rgba(0, 187, 119, 0.18)' : '#00bb77',
         tension: 0.3,
         fill: isArea,
         pointRadius: isLineish ? 2 : 0,
@@ -160,7 +160,7 @@ const chartOptions = computed(() => {
         title: {
           display: true,
           text: '£ GBP',
-          color: '#667eea',
+          color: '#00bb77',
           font: { size: 11, weight: '600' }
         },
         ticks: { callback: (v) => '£' + Number(v).toLocaleString() }

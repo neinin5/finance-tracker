@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useExpensesStore } from '../stores/expenses'
+import { useToastStore } from '../stores/toast'
 
 const store = useExpensesStore()
+const toast = useToastStore()
 const importing = ref(false)
 const result = ref(null)
 const error = ref('')
@@ -28,8 +30,12 @@ async function handleImport() {
   result.value = null
   try {
     result.value = await store.importGoogleSheet()
+    toast.success(
+      `Import complete · ${result.value.imported} new, ${result.value.updated} updated`
+    )
   } catch (err) {
     error.value = err.message || 'Import failed'
+    toast.error(error.value)
   } finally {
     importing.value = false
   }
@@ -136,7 +142,7 @@ async function handleImport() {
 }
 .primary {
   padding: 0.7rem 1.2rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00bb77, #008855);
   color: white;
   border: none;
   border-radius: 8px;

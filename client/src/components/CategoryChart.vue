@@ -37,16 +37,16 @@ const TYPES = [
 const chartType = ref('doughnut')
 
 const COLORS = [
-  '#667eea',
-  '#764ba2',
-  '#f093fb',
-  '#f5576c',
-  '#4facfe',
-  '#00f2fe',
-  '#43e97b',
-  '#38f9d7',
-  '#fa709a',
-  '#fee140'
+  '#00bb77',
+  '#008855',
+  '#2ddb95',
+  '#0ea5e9',
+  '#6366f1',
+  '#f59e0b',
+  '#ec4899',
+  '#14b8a6',
+  '#84cc16',
+  '#a78bfa'
 ]
 
 const sortedEntries = computed(() =>
