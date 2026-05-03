@@ -104,6 +104,15 @@ export const useExpensesStore = defineStore('expenses', () => {
     return result
   }
 
+  async function importCsv(csv, defaultCurrency = 'GBP') {
+    const result = await api('/import/csv', {
+      method: 'POST',
+      body: { csv, defaultCurrency }
+    })
+    await fetchAll()
+    return result
+  }
+
   function reset() {
     expenses.value = []
     error.value = null
@@ -129,6 +138,7 @@ export const useExpensesStore = defineStore('expenses', () => {
     addExpense,
     deleteExpense,
     importGoogleSheet,
+    importCsv,
     reset
   }
 })
