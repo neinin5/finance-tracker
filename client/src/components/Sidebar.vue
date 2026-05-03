@@ -14,7 +14,10 @@ const expenseStore = useExpensesStore()
 const NAV_SECTIONS = [
   {
     title: 'Overview',
-    items: [{ name: 'Dashboard', to: '/dashboard' }]
+    items: [
+      { name: 'Dashboard', to: '/dashboard' },
+      { name: 'Split View', to: '/split' }
+    ]
   },
   {
     title: 'Tracking',

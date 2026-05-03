@@ -8,6 +8,7 @@ import TrendsView from '../views/TrendsView.vue'
 import CalendarView from '../views/CalendarView.vue'
 import ExchangeRateView from '../views/ExchangeRateView.vue'
 import ImportView from '../views/ImportView.vue'
+import SplitView from '../views/SplitView.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView },
@@ -26,7 +27,8 @@ const routes = [
         name: 'exchange-rate',
         component: ExchangeRateView
       },
-      { path: 'import', name: 'import', component: ImportView }
+      { path: 'import', name: 'import', component: ImportView },
+      { path: 'split', name: 'split', component: SplitView }
     ]
   }
 ]
