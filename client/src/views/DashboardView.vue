@@ -7,6 +7,7 @@ import StatsRow from '../components/StatsRow.vue'
 import MonthComparison from '../components/MonthComparison.vue'
 import SpendingTrendChart from '../components/SpendingTrendChart.vue'
 import CategoryChart from '../components/CategoryChart.vue'
+import WeekdayChart from '../components/WeekdayChart.vue'
 import SpendingHeatmap from '../components/SpendingHeatmap.vue'
 import ExpenseList from '../components/ExpenseList.vue'
 
@@ -30,6 +31,7 @@ const auth = useAuthStore()
       <StatsRow />
       <MonthComparison />
       <SpendingTrendChart initial-period="D" initial-type="line" />
+      <WeekdayChart />
       <CategoryChart />
       <SpendingHeatmap :weeks="26" />
       <ExpenseList :limit="10" title="Recent Expenses" />
