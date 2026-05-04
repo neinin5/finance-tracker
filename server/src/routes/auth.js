@@ -4,6 +4,7 @@ import User from '../models/User.js'
 import Expense from '../models/Expense.js'
 import Budget from '../models/Budget.js'
 import Backup from '../models/Backup.js'
+import Income from '../models/Income.js'
 import { authRequired, signToken } from '../middleware/auth.js'
 
 const router = express.Router()
@@ -120,6 +121,7 @@ router.delete('/account', authRequired, async (req, res) => {
 
   await Promise.all([
     Expense.deleteMany({ user: req.userId }),
+    Income.deleteMany({ user: req.userId }),
     Budget.deleteMany({ user: req.userId }),
     Backup.deleteMany({ user: req.userId }),
     User.findByIdAndDelete(req.userId)

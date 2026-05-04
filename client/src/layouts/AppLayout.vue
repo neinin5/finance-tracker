@@ -8,9 +8,11 @@ import QuickFAB from '../components/QuickFAB.vue'
 import ShortcutsHelp from '../components/ShortcutsHelp.vue'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
+import { useIncomeStore } from '../stores/income'
 
 const ui = useUiStore()
 const expenseStore = useExpensesStore()
+const incomeStore = useIncomeStore()
 const router = useRouter()
 
 const pendingG = ref(false)
@@ -36,7 +38,8 @@ function handleKey(e) {
     const map = {
       d: '/dashboard', s: '/split', e: '/expenses',
       t: '/trends', c: '/calendar', r: '/exchange-rate',
-      i: '/import', b: '/backups', x: '/settings', m: '/map'
+      i: '/import', b: '/backups', x: '/settings', m: '/map',
+      n: '/income'
     }
     const path = map[e.key.toLowerCase()]
     if (path) router.push(path)
@@ -54,6 +57,7 @@ function handleKey(e) {
 
 onMounted(() => {
   if (!expenseStore.expenses.length) expenseStore.fetchAll()
+  if (!incomeStore.incomes.length) incomeStore.fetchAll()
   window.addEventListener('keydown', handleKey)
 })
 onBeforeUnmount(() => window.removeEventListener('keydown', handleKey))

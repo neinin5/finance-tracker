@@ -1,13 +1,21 @@
 <script setup>
 import { computed, toRef } from 'vue'
 import { useExpensesStore } from '../stores/expenses'
+import { useIncomeStore } from '../stores/income'
 import { formatTHB, formatGBP } from '../composables/useCurrency'
 import { useAnimatedNumber } from '../composables/useAnimatedNumber'
 
 const store = useExpensesStore()
+const income = useIncomeStore()
 
+// Total available = initial fund + income; "used" = expenses
+const totalAvailableTHB = computed(
+  () => store.initialFundTHB + income.totalIncomeTHB
+)
 const usedPercent = computed(() =>
-  Math.min(100, Math.max(0, (store.totalSpentTHB / store.initialFundTHB) * 100))
+  totalAvailableTHB.value === 0
+    ? 0
+    : Math.min(100, Math.max(0, (store.totalSpentTHB / totalAvailableTHB.value) * 100))
 )
 const usedPercentDisplay = computed(() => usedPercent.value.toFixed(1))
 
@@ -20,13 +28,28 @@ const animatedTHB = useAnimatedNumber(remainingTHBRef, { duration: 900 })
 <template>
   <div class="balance-card">
     <div class="header">
-      <h2>Remaining Scholarship Fund</h2>
+      <h2>Available Balance</h2>
       <span class="rate">£1 = ฿{{ store.exchangeRate }}</span>
     </div>
 
     <div class="amounts">
       <div class="primary">{{ formatGBP(animatedGBP) }}</div>
       <div class="secondary">({{ formatTHB(animatedTHB) }})</div>
+    </div>
+
+    <div v-if="income.totalIncomeGBP > 0" class="breakdown">
+      <span class="chip">
+        <span class="chip-lbl">Fund</span>
+        <span>{{ formatGBP(store.initialFundGBP) }}</span>
+      </span>
+      <span class="chip plus">
+        <span class="chip-lbl">+ Income</span>
+        <span>{{ formatGBP(income.totalIncomeGBP) }}</span>
+      </span>
+      <span class="chip minus">
+        <span class="chip-lbl">− Spent</span>
+        <span>{{ formatGBP(store.totalSpentGBP) }}</span>
+      </span>
     </div>
 
     <div class="progress" :title="`${usedPercentDisplay}% used`">
@@ -37,8 +60,8 @@ const animatedTHB = useAnimatedNumber(remainingTHBRef, { duration: 900 })
       <span>{{ usedPercentDisplay }}% used</span>
       <span>
         {{ formatGBP(store.totalSpentGBP) }} of
-        {{ formatGBP(store.initialFundGBP) }}
-        <span class="thb-meta">({{ formatTHB(store.initialFundTHB) }})</span>
+        {{ formatGBP(store.initialFundGBP + income.totalIncomeGBP) }}
+        <span class="thb-meta">total</span>
       </span>
     </div>
   </div>
@@ -111,4 +134,29 @@ const animatedTHB = useAnimatedNumber(remainingTHBRef, { duration: 900 })
   opacity: 0.7;
   margin-left: 0.25rem;
 }
+.breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: -0.4rem 0 0.85rem;
+}
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.chip-lbl {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.chip.plus { background: rgba(255, 255, 255, 0.22); }
+.chip.minus { background: rgba(0, 0, 0, 0.18); }
 </style>

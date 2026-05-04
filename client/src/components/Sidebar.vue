@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useUiStore } from '../stores/ui'
 import { useExpensesStore } from '../stores/expenses'
+import { useIncomeStore } from '../stores/income'
 import { useToastStore } from '../stores/toast'
 import { api } from '../api/client'
 
@@ -11,6 +12,7 @@ const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
 const expenseStore = useExpensesStore()
+const incomeStore = useIncomeStore()
 const toast = useToastStore()
 
 const NAV_SECTIONS = [
@@ -24,7 +26,8 @@ const NAV_SECTIONS = [
   {
     title: 'Tracking',
     items: [
-      { name: 'All Records', to: '/expenses' },
+      { name: 'Expenses', to: '/expenses' },
+      { name: 'Income', to: '/income' },
       { name: 'Trends', to: '/trends' },
       { name: 'Calendar', to: '/calendar' },
       { name: 'Map', to: '/map' }
@@ -81,6 +84,7 @@ async function handleEmailSummary() {
 function handleLogout() {
   auth.logout()
   expenseStore.reset()
+  incomeStore.reset()
   ui.closeSidebar()
   router.push('/login')
 }

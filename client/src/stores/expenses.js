@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { api } from '../api/client'
 import { EXCHANGE_RATE_THB_PER_GBP } from '../composables/useCurrency'
 import { useAuthStore } from './auth'
+import { useIncomeStore } from './income'
 
 function weekStartISO(dateStr) {
   const d = new Date(dateStr + 'T00:00:00Z')
@@ -18,6 +19,7 @@ export const useExpensesStore = defineStore('expenses', () => {
   const error = ref(null)
 
   const auth = useAuthStore()
+  const incomeStore = useIncomeStore()
   const initialFundTHB = computed(() => auth.user?.initialFundTHB ?? 1_500_000)
   const exchangeRate = computed(() => auth.user?.exchangeRate ?? EXCHANGE_RATE_THB_PER_GBP)
 
@@ -27,7 +29,10 @@ export const useExpensesStore = defineStore('expenses', () => {
   const totalSpentGBP = computed(() =>
     expenses.value.reduce((sum, e) => sum + e.amountGBP, 0)
   )
-  const remainingTHB = computed(() => initialFundTHB.value - totalSpentTHB.value)
+  // Available = initial fund + total income - total expenses
+  const remainingTHB = computed(
+    () => initialFundTHB.value + incomeStore.totalIncomeTHB - totalSpentTHB.value
+  )
   const remainingGBP = computed(() => remainingTHB.value / exchangeRate.value)
   const initialFundGBP = computed(() => initialFundTHB.value / exchangeRate.value)
 

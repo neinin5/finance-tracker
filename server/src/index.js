@@ -10,6 +10,7 @@ import exportRoutes from './routes/export.js'
 import notificationRoutes from './routes/notifications.js'
 import budgetRoutes from './routes/budget.js'
 import backupRoutes from './routes/backups.js'
+import incomeRoutes from './routes/incomes.js'
 
 const app = express()
 
@@ -39,6 +40,7 @@ app.use('/api/export', exportRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/budget', budgetRoutes)
 app.use('/api/backups', backupRoutes)
+app.use('/api/incomes', incomeRoutes)
 
 app.use((err, req, res, _next) => {
   console.error(err)

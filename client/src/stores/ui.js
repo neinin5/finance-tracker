@@ -19,6 +19,7 @@ export const useUiStore = defineStore('ui', () => {
   const sidebarOpen = ref(false)
   const shortcutsOpen = ref(false)
   const theme = ref(detectTheme())
+  const preferredEntryType = ref('expense') // 'expense' | 'income'
 
   document.documentElement.setAttribute('data-theme', theme.value)
   watch(theme, (val) => {
@@ -26,8 +27,12 @@ export const useUiStore = defineStore('ui', () => {
     localStorage.setItem(THEME_KEY, val)
   })
 
-  function openAddModal() { addModalOpen.value = true }
+  function openAddModal(type = 'expense') {
+    preferredEntryType.value = type === 'income' ? 'income' : 'expense'
+    addModalOpen.value = true
+  }
   function closeAddModal() { addModalOpen.value = false }
+  function openIncomeModal() { openAddModal('income') }
   function toggleSidebar() { sidebarOpen.value = !sidebarOpen.value }
   function closeSidebar() { sidebarOpen.value = false }
   function openShortcuts() { shortcutsOpen.value = true }
@@ -39,7 +44,9 @@ export const useUiStore = defineStore('ui', () => {
     sidebarOpen,
     shortcutsOpen,
     theme,
+    preferredEntryType,
     openAddModal,
+    openIncomeModal,
     closeAddModal,
     toggleSidebar,
     closeSidebar,
