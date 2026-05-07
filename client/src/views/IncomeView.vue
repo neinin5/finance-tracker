@@ -47,6 +47,10 @@ async function handleDelete(income) {
     toast.error(err.message || 'Delete failed')
   }
 }
+
+function handleEdit(income) {
+  ui.openEditModal('income', income)
+}
 </script>
 
 <template>
@@ -109,7 +113,10 @@ async function handleDelete(income) {
             <td class="desc">{{ i.description || '—' }}</td>
             <td class="num gbp">+{{ formatGBP(i.amountGBP) }}</td>
             <td class="num thb">+{{ formatTHB(i.amountTHB) }}</td>
-            <td><button class="del" @click="handleDelete(i)" title="Delete">×</button></td>
+            <td class="row-actions">
+              <button class="edit" @click="handleEdit(i)" title="Edit">✎</button>
+              <button class="del" @click="handleDelete(i)" title="Delete">×</button>
+            </td>
           </tr>
         </tbody>
         <tfoot v-if="search">
@@ -270,7 +277,12 @@ async function handleDelete(income) {
   font-weight: 600;
   white-space: nowrap;
 }
-.del {
+.row-actions {
+  display: flex;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+.edit, .del {
   background: transparent;
   border: 1px solid var(--color-border);
   color: var(--color-text-faded);
@@ -278,10 +290,19 @@ async function handleDelete(income) {
   height: 28px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
   font-family: inherit;
   font-weight: 700;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.edit { font-size: 0.85rem; }
+.del { font-size: 1rem; }
+.edit:hover {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-color: var(--color-info-text);
 }
 .del:hover {
   background: var(--color-error-bg);

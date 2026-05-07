@@ -68,15 +68,33 @@ const previewText = computed(() => {
   return `≈ ${formatGBP(previewGBP.value)} · ${formatTHB(gbpToThb(previewGBP.value))}`
 })
 
+const isEditing = computed(() => ui.editingItem != null)
+const editingId = computed(() => ui.editingItem?.data?._id || null)
+
 watch(
   () => ui.addModalOpen,
   (open) => {
     if (open) {
-      entryType.value = ui.preferredEntryType || 'expense'
-      Object.assign(form, initialForm())
-      form.category = entryType.value === 'income'
-        ? INCOME_CATEGORIES[0]
-        : EXPENSE_CATEGORIES[0]
+      const editing = ui.editingItem
+      if (editing) {
+        // Edit mode — pre-populate from existing record
+        entryType.value = editing.type
+        const d = editing.data
+        Object.assign(form, {
+          date: d.date,
+          category: d.category,
+          description: d.description || '',
+          amount: String(d.amountOriginal ?? d.amountGBP ?? ''),
+          currency: d.currency || 'GBP',
+          location: d.location?.lat != null ? { ...d.location } : null
+        })
+      } else {
+        entryType.value = ui.preferredEntryType || 'expense'
+        Object.assign(form, initialForm())
+        form.category = entryType.value === 'income'
+          ? INCOME_CATEGORIES[0]
+          : EXPENSE_CATEGORIES[0]
+      }
       error.value = ''
     }
   }
@@ -92,27 +110,35 @@ async function handleSubmit() {
   error.value = ''
   try {
     const gbpAmt = toGBP(amount, form.currency)
-    if (entryType.value === 'income') {
-      await incomeStore.addIncome({
-        date: form.date,
-        category: form.category,
-        description: form.description.trim(),
-        currency: form.currency,
-        amountOriginal: amount,
-        amountGBP: gbpAmt
-      })
-      toast.success(`+${formatGBP(gbpAmt)} income · ${form.category}`)
+    const incomePayload = {
+      date: form.date,
+      category: form.category,
+      description: form.description.trim(),
+      currency: form.currency,
+      amountOriginal: amount,
+      amountGBP: gbpAmt
+    }
+    const expensePayload = {
+      ...incomePayload,
+      location: form.location || null
+    }
+
+    if (isEditing.value) {
+      if (entryType.value === 'income') {
+        await incomeStore.updateIncome(editingId.value, incomePayload)
+        toast.success(`Income updated · ${formatGBP(gbpAmt)}`)
+      } else {
+        await expenseStore.updateExpense(editingId.value, expensePayload)
+        toast.success(`Expense updated · ${formatGBP(gbpAmt)}`)
+      }
     } else {
-      await expenseStore.addExpense({
-        date: form.date,
-        category: form.category,
-        description: form.description.trim(),
-        currency: form.currency,
-        amountOriginal: amount,
-        amountGBP: gbpAmt,
-        location: form.location || undefined
-      })
-      toast.success(`Added ${formatGBP(gbpAmt)} to ${form.category}`)
+      if (entryType.value === 'income') {
+        await incomeStore.addIncome(incomePayload)
+        toast.success(`+${formatGBP(gbpAmt)} income · ${form.category}`)
+      } else {
+        await expenseStore.addExpense(expensePayload)
+        toast.success(`Added ${formatGBP(gbpAmt)} to ${form.category}`)
+      }
     }
     ui.closeAddModal()
   } catch (err) {
@@ -127,17 +153,23 @@ async function handleSubmit() {
 <template>
   <Modal
     :open="ui.addModalOpen"
-    :title="entryType === 'income' ? 'Add Income' : 'Add Expense'"
+    :title="isEditing
+      ? (entryType === 'income' ? 'Edit Income' : 'Edit Expense')
+      : (entryType === 'income' ? 'Add Income' : 'Add Expense')"
     @close="ui.closeAddModal"
   >
     <form class="form" @submit.prevent="handleSubmit">
-      <div class="type-toggle" :class="entryType">
+      <div v-if="!isEditing" class="type-toggle" :class="entryType">
         <button type="button" :class="{ active: entryType === 'expense' }" @click="entryType = 'expense'">
           <span class="icon">−</span> Expense
         </button>
         <button type="button" :class="{ active: entryType === 'income' }" @click="entryType = 'income'">
           <span class="icon">+</span> Income
         </button>
+      </div>
+      <div v-else class="edit-banner" :class="entryType">
+        <span class="icon">{{ entryType === 'income' ? '+' : '−' }}</span>
+        Editing {{ entryType === 'income' ? 'income' : 'expense' }} record
       </div>
 
       <label>
@@ -204,7 +236,13 @@ async function handleSubmit() {
           Cancel
         </button>
         <button type="submit" class="save" :class="entryType" :disabled="submitting">
-          {{ submitting ? 'Saving…' : entryType === 'income' ? 'Save Income' : 'Save Expense' }}
+          {{
+            submitting
+              ? 'Saving…'
+              : isEditing
+                ? 'Save changes'
+                : entryType === 'income' ? 'Save Income' : 'Save Expense'
+          }}
         </button>
       </div>
     </form>
@@ -369,6 +407,31 @@ select:focus {
   background: #00bb77;
   color: white;
 }
+.edit-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.edit-banner .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+}
+.edit-banner.expense .icon { background: #dc2626; }
+.edit-banner.income .icon { background: #00bb77; }
 .actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

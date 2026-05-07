@@ -39,6 +39,37 @@ router.post('/', async (req, res) => {
   res.status(201).json(income)
 })
 
+router.put('/:id', async (req, res) => {
+  const existing = await Income.findOne({ _id: req.params.id, user: req.userId })
+  if (!existing) return res.status(404).json({ error: 'Not found' })
+
+  const { date, category, description, note, currency, amountOriginal, amountGBP } = req.body || {}
+  const chosenCurrency = currency || existing.currency || 'GBP'
+  const originalAmount =
+    amountOriginal != null
+      ? Number(amountOriginal)
+      : amountGBP != null
+        ? Number(amountGBP)
+        : existing.amountOriginal
+
+  if (!date || !category || !originalAmount || originalAmount <= 0) {
+    return res.status(400).json({ error: 'Date, category and amount are required' })
+  }
+
+  const gbp = toGBP(originalAmount, chosenCurrency)
+  existing.date = date
+  existing.category = category
+  existing.description = description ?? existing.description
+  existing.note = note ?? existing.note
+  existing.currency = chosenCurrency
+  existing.amountOriginal = originalAmount
+  existing.amountGBP = gbp
+  existing.amountTHB = gbpToThb(gbp)
+
+  await existing.save()
+  res.json(existing)
+})
+
 router.delete('/:id', async (req, res) => {
   const result = await Income.deleteOne({
     _id: req.params.id,

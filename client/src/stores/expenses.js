@@ -98,6 +98,13 @@ export const useExpensesStore = defineStore('expenses', () => {
     return created
   }
 
+  async function updateExpense(id, input) {
+    const updated = await api(`/expenses/${id}`, { method: 'PUT', body: input })
+    const idx = expenses.value.findIndex((e) => e._id === id)
+    if (idx >= 0) expenses.value.splice(idx, 1, updated)
+    return updated
+  }
+
   async function deleteExpense(id) {
     await api(`/expenses/${id}`, { method: 'DELETE' })
     expenses.value = expenses.value.filter((e) => e._id !== id)
@@ -141,6 +148,7 @@ export const useExpensesStore = defineStore('expenses', () => {
     spentByYear,
     fetchAll,
     addExpense,
+    updateExpense,
     deleteExpense,
     importGoogleSheet,
     importCsv,

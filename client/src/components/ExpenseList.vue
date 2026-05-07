@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useExpensesStore } from '../stores/expenses'
+import { useUiStore } from '../stores/ui'
 import { formatTHB, formatGBP, formatCurrency } from '../composables/useCurrency'
 
 const props = defineProps({
@@ -9,6 +10,7 @@ const props = defineProps({
 })
 
 const store = useExpensesStore()
+const ui = useUiStore()
 const filter = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
@@ -100,6 +102,10 @@ async function handleDelete(id) {
   } catch (err) {
     alert('Could not delete: ' + err.message)
   }
+}
+
+function handleEdit(expense) {
+  ui.openEditModal('expense', expense)
 }
 </script>
 
@@ -193,14 +199,24 @@ async function handleDelete(id) {
             </p>
             <p class="thb">({{ formatTHB(e.amountTHB) }})</p>
           </div>
-          <button
-            class="delete"
-            @click="handleDelete(e._id)"
-            aria-label="Delete expense"
-            title="Delete"
-          >
-            ×
-          </button>
+          <div class="actions">
+            <button
+              class="edit"
+              @click="handleEdit(e)"
+              aria-label="Edit expense"
+              title="Edit"
+            >
+              ✎
+            </button>
+            <button
+              class="delete"
+              @click="handleDelete(e._id)"
+              aria-label="Delete expense"
+              title="Delete"
+            >
+              ×
+            </button>
+          </div>
         </div>
       </li>
     </ul>
@@ -406,18 +422,31 @@ async function handleDelete(id) {
   color: var(--color-text-faded);
   margin-top: 0.15rem;
 }
-.delete {
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.edit, .delete {
   background: transparent;
   color: var(--color-text-faded);
   border: none;
-  font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.edit { font-size: 1rem; }
+.delete { font-size: 1.4rem; }
+.edit:hover {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 }
 .delete:hover {
   background: var(--color-error-bg);

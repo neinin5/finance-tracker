@@ -61,6 +61,13 @@ export const useIncomeStore = defineStore('income', () => {
     return created
   }
 
+  async function updateIncome(id, input) {
+    const updated = await api(`/incomes/${id}`, { method: 'PUT', body: input })
+    const idx = incomes.value.findIndex((i) => i._id === id)
+    if (idx >= 0) incomes.value.splice(idx, 1, updated)
+    return updated
+  }
+
   async function deleteIncome(id) {
     await api(`/incomes/${id}`, { method: 'DELETE' })
     incomes.value = incomes.value.filter((i) => i._id !== id)
@@ -81,6 +88,7 @@ export const useIncomeStore = defineStore('income', () => {
     incomeByMonth,
     fetchAll,
     addIncome,
+    updateIncome,
     deleteIncome,
     reset
   }
