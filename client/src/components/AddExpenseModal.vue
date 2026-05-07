@@ -94,6 +94,8 @@ watch(
         form.category = entryType.value === 'income'
           ? INCOME_CATEGORIES[0]
           : EXPENSE_CATEGORIES[0]
+        // Honor preferred entry date (e.g. clicked from calendar)
+        if (ui.preferredEntryDate) form.date = ui.preferredEntryDate
       }
       error.value = ''
     }

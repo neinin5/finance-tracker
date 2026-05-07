@@ -20,6 +20,7 @@ export const useUiStore = defineStore('ui', () => {
   const shortcutsOpen = ref(false)
   const theme = ref(detectTheme())
   const preferredEntryType = ref('expense') // 'expense' | 'income'
+  const preferredEntryDate = ref(null) // ISO date string or null
   const editingItem = ref(null) // { type, data } or null
 
   document.documentElement.setAttribute('data-theme', theme.value)
@@ -41,6 +42,7 @@ export const useUiStore = defineStore('ui', () => {
   function closeAddModal() {
     addModalOpen.value = false
     editingItem.value = null
+    preferredEntryDate.value = null
   }
   function openIncomeModal() { openAddModal('income') }
   function toggleSidebar() { sidebarOpen.value = !sidebarOpen.value }
@@ -55,6 +57,7 @@ export const useUiStore = defineStore('ui', () => {
     shortcutsOpen,
     theme,
     preferredEntryType,
+    preferredEntryDate,
     editingItem,
     openAddModal,
     openEditModal,
