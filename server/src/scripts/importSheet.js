@@ -88,6 +88,8 @@ export async function importFromGoogleSheet({
       note: (note || '').toString().trim(),
       amountGBP,
       amountTHB: gbpToThb(amountGBP),
+      currency: 'GBP',
+      amountOriginal: amountGBP,
       source: 'google-sheet',
       externalId
     }
