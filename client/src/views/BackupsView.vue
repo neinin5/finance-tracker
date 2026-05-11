@@ -2,11 +2,15 @@
 import { ref, onMounted, computed } from 'vue'
 import { useBackupsStore } from '../stores/backups'
 import { useExpensesStore } from '../stores/expenses'
+import { useIncomeStore } from '../stores/income'
+import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import { formatGBP, formatTHB } from '../composables/useCurrency'
 
 const backups = useBackupsStore()
 const expenses = useExpensesStore()
+const income = useIncomeStore()
+const auth = useAuthStore()
 const toast = useToastStore()
 
 const label = ref('')
@@ -16,7 +20,11 @@ onMounted(() => backups.fetchAll())
 async function handleCreate() {
   try {
     const b = await backups.createBackup(label.value.trim())
-    toast.success(`Backup saved · ${b.expenseCount} records`)
+    const parts = [
+      `${b.expenseCount ?? 0} expenses`,
+      `${b.incomeCount ?? 0} incomes`
+    ]
+    toast.success(`Backup saved · ${parts.join(', ')}`)
     label.value = ''
   } catch (err) {
     toast.error(err.message || 'Backup failed')
@@ -24,17 +32,42 @@ async function handleCreate() {
 }
 
 async function handleRestore(b) {
+  const summary = [
+    `${b.expenseCount ?? 0} expenses (${b.manualExpenseCount ?? 0} manual, ${b.sheetExpenseCount ?? 0} from sheet)`,
+    `${b.incomeCount ?? 0} income records`,
+    b.monthlyLimitGBP != null ? `monthly budget ${formatGBP(b.monthlyLimitGBP)}` : null,
+    b.userSettings?.initialFundTHB ? `scholarship fund ${formatTHB(b.userSettings.initialFundTHB)}` : null
+  ].filter(Boolean).join('\n• ')
+
   if (!confirm(
     `Restore backup "${b.label}"?\n\n` +
-    `This will REPLACE all current expenses (${expenses.expenses.length}) ` +
-    `with ${b.expenseCount} records from ${formatDate(b.createdAt)}.`
+    `This will REPLACE your current data with the snapshot from ${formatDate(b.createdAt)}:\n\n• ${summary}\n\n` +
+    `Current: ${expenses.expenses.length} expenses, ${income.incomes.length} incomes will be deleted.`
   )) return
+
   try {
     const r = await backups.restore(b._id)
-    await expenses.fetchAll()
-    toast.success(`Restored ${r.restored} records`)
+    // Reload everything that may have changed
+    await Promise.all([
+      expenses.fetchAll(),
+      income.fetchAll(),
+      auth.bootstrap === undefined ? Promise.resolve() : refreshUserSettings()
+    ])
+    toast.success(
+      `Restored ${r.restoredExpenses ?? 0} expenses, ${r.restoredIncomes ?? 0} incomes`
+    )
   } catch (err) {
     toast.error(err.message || 'Restore failed')
+  }
+}
+
+async function refreshUserSettings() {
+  // Re-fetch user to get the restored initialFundTHB / exchangeRate
+  try {
+    const { api } = await import('../api/client')
+    auth.user = await api('/auth/me')
+  } catch (err) {
+    console.warn('Could not refresh user settings:', err)
   }
 }
 
@@ -72,7 +105,7 @@ function formatDate(iso) {
 }
 
 const totalSize = computed(() =>
-  backups.backups.reduce((s, b) => s + (b.expenseCount || 0), 0)
+  backups.backups.reduce((s, b) => s + (b.expenseCount || 0) + (b.incomeCount || 0), 0)
 )
 </script>
 
@@ -90,8 +123,11 @@ const totalSize = computed(() =>
       <div class="card create-card">
         <h3>Create New Backup</h3>
         <p class="desc">
-          Snapshots all <strong>{{ expenses.expenses.length }}</strong> current
-          expenses and your monthly budget into a separate collection.
+          Snapshots <strong>everything</strong> into MongoDB:
+          {{ expenses.expenses.length }} expenses
+          (including those imported from Google Sheet),
+          {{ income.incomes.length }} income records, your monthly budget,
+          scholarship fund, and exchange rate settings.
         </p>
         <div class="create-row">
           <input
@@ -140,14 +176,29 @@ const totalSize = computed(() =>
           <div class="row-meta">
             <span>{{ formatDate(b.createdAt) }}</span>
             <span class="dot">·</span>
-            <span>{{ b.expenseCount }} records</span>
-            <span class="dot">·</span>
             <span class="amt">{{ formatGBP(b.totalGBP) }}</span>
-            <span class="thb">({{ formatTHB(b.totalTHB) }})</span>
-            <template v-if="b.monthlyLimitGBP != null">
-              <span class="dot">·</span>
-              <span class="budget-tag">Budget {{ formatGBP(b.monthlyLimitGBP) }}</span>
-            </template>
+            <span class="thb">spent</span>
+            <span v-if="b.totalIncomeGBP > 0" class="dot">·</span>
+            <span v-if="b.totalIncomeGBP > 0" class="amt inc">+{{ formatGBP(b.totalIncomeGBP) }}</span>
+            <span v-if="b.totalIncomeGBP > 0" class="thb">income</span>
+          </div>
+          <div class="chips">
+            <span class="chip exp">
+              {{ b.expenseCount ?? 0 }} expenses
+              <span v-if="b.sheetExpenseCount" class="sub">· {{ b.sheetExpenseCount }} from sheet</span>
+            </span>
+            <span v-if="b.incomeCount > 0" class="chip inc">
+              {{ b.incomeCount }} incomes
+            </span>
+            <span v-if="b.monthlyLimitGBP != null" class="chip">
+              Budget {{ formatGBP(b.monthlyLimitGBP) }}/mo
+            </span>
+            <span v-if="b.userSettings?.initialFundTHB" class="chip">
+              Fund {{ formatTHB(b.userSettings.initialFundTHB) }}
+            </span>
+            <span v-if="b.userSettings?.exchangeRate" class="chip">
+              Rate £1 = ฿{{ b.userSettings.exchangeRate }}
+            </span>
           </div>
         </div>
         <div class="row-actions">
@@ -316,6 +367,31 @@ const totalSize = computed(() =>
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 600;
+}
+.amt.inc { color: #00bb77; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.chip.exp { color: #dc2626; }
+.chip.inc { color: #00bb77; }
+.chip .sub {
+  color: var(--color-text-faded);
+  font-weight: 500;
 }
 
 .row-actions {

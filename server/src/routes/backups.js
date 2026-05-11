@@ -1,17 +1,19 @@
 import express from 'express'
 import Backup from '../models/Backup.js'
 import Expense from '../models/Expense.js'
+import Income from '../models/Income.js'
 import Budget from '../models/Budget.js'
+import User from '../models/User.js'
 import { authRequired } from '../middleware/auth.js'
 
 const router = express.Router()
 router.use(authRequired)
 
-// GET /api/backups — list (without expense payloads)
+// GET /api/backups — list (without heavy payloads)
 router.get('/', async (req, res, next) => {
   try {
     const list = await Backup.find({ user: req.userId })
-      .select('-expenses')
+      .select('-expenses -incomes')
       .sort({ createdAt: -1 })
       .lean()
     res.json(list)
@@ -24,30 +26,50 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const label = (req.body?.label || '').toString().trim().slice(0, 100)
-    const expenses = await Expense.find({ user: req.userId }).lean()
-    const budget = await Budget.findOne({ user: req.userId }).lean()
+
+    const [expenses, incomes, budget, user] = await Promise.all([
+      Expense.find({ user: req.userId }).lean(),
+      Income.find({ user: req.userId }).lean(),
+      Budget.findOne({ user: req.userId }).lean(),
+      User.findById(req.userId).lean()
+    ])
 
     const totalGBP = expenses.reduce((s, e) => s + (e.amountGBP || 0), 0)
     const totalTHB = expenses.reduce((s, e) => s + (e.amountTHB || 0), 0)
+    const totalIncomeGBP = incomes.reduce((s, i) => s + (i.amountGBP || 0), 0)
+    const totalIncomeTHB = incomes.reduce((s, i) => s + (i.amountTHB || 0), 0)
+    const manualExpenseCount = expenses.filter((e) => e.source !== 'google-sheet').length
+    const sheetExpenseCount = expenses.filter((e) => e.source === 'google-sheet').length
 
     const backup = await Backup.create({
       user: req.userId,
       label: label || `Backup ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
       expenseCount: expenses.length,
+      manualExpenseCount,
+      sheetExpenseCount,
+      incomeCount: incomes.length,
       totalGBP,
       totalTHB,
+      totalIncomeGBP,
+      totalIncomeTHB,
       monthlyLimitGBP: budget?.monthlyLimitGBP ?? null,
-      expenses
+      userSettings: {
+        initialFundTHB: user?.initialFundTHB ?? null,
+        exchangeRate: user?.exchangeRate ?? null
+      },
+      expenses,
+      incomes,
+      version: 2
     })
 
-    const { expenses: _omit, ...summary } = backup.toObject()
+    const { expenses: _x, incomes: _i, ...summary } = backup.toObject()
     res.status(201).json(summary)
   } catch (err) {
     next(err)
   }
 })
 
-// GET /api/backups/:id — full backup including expense payload (for download)
+// GET /api/backups/:id — full backup (for download)
 router.get('/:id', async (req, res, next) => {
   try {
     const backup = await Backup.findOne({
@@ -61,7 +83,7 @@ router.get('/:id', async (req, res, next) => {
   }
 })
 
-// POST /api/backups/:id/restore — replace all expenses with snapshot
+// POST /api/backups/:id/restore — replace all data with snapshot
 router.post('/:id/restore', async (req, res, next) => {
   try {
     const backup = await Backup.findOne({
@@ -70,16 +92,27 @@ router.post('/:id/restore', async (req, res, next) => {
     }).lean()
     if (!backup) return res.status(404).json({ error: 'Backup not found' })
 
-    // Wipe current expenses, then re-insert from snapshot
-    await Expense.deleteMany({ user: req.userId })
+    // Wipe current expenses + incomes, then re-insert from snapshot
+    await Promise.all([
+      Expense.deleteMany({ user: req.userId }),
+      Income.deleteMany({ user: req.userId })
+    ])
 
-    const docs = (backup.expenses || []).map((e) => {
-      const { _id, __v, ...rest } = e
-      return { ...rest, user: req.userId }
-    })
-    if (docs.length) await Expense.insertMany(docs, { ordered: false })
+    const stripIds = (arr) =>
+      (arr || []).map((d) => {
+        const { _id, __v, ...rest } = d
+        return { ...rest, user: req.userId }
+      })
 
-    // Restore monthly budget if present
+    const expenseDocs = stripIds(backup.expenses)
+    const incomeDocs = stripIds(backup.incomes)
+
+    const inserts = []
+    if (expenseDocs.length) inserts.push(Expense.insertMany(expenseDocs, { ordered: false }))
+    if (incomeDocs.length) inserts.push(Income.insertMany(incomeDocs, { ordered: false }))
+    await Promise.all(inserts)
+
+    // Restore monthly budget
     if (backup.monthlyLimitGBP != null) {
       await Budget.findOneAndUpdate(
         { user: req.userId },
@@ -88,9 +121,23 @@ router.post('/:id/restore', async (req, res, next) => {
       )
     }
 
+    // Restore user settings (initial fund + exchange rate)
+    const userUpdate = {}
+    if (backup.userSettings?.initialFundTHB != null) {
+      userUpdate.initialFundTHB = backup.userSettings.initialFundTHB
+    }
+    if (backup.userSettings?.exchangeRate != null) {
+      userUpdate.exchangeRate = backup.userSettings.exchangeRate
+    }
+    if (Object.keys(userUpdate).length) {
+      await User.findByIdAndUpdate(req.userId, userUpdate)
+    }
+
     res.json({
-      restored: docs.length,
-      monthlyLimitGBP: backup.monthlyLimitGBP ?? null
+      restoredExpenses: expenseDocs.length,
+      restoredIncomes: incomeDocs.length,
+      monthlyLimitGBP: backup.monthlyLimitGBP ?? null,
+      userSettings: backup.userSettings || null
     })
   } catch (err) {
     next(err)
