@@ -6,14 +6,18 @@ import { gbpToThb, toGBP } from '../utils/currency.js'
 const router = express.Router()
 router.use(authRequired)
 
-router.get('/', async (req, res) => {
-  const incomes = await Income.find({ user: req.userId })
-    .sort({ date: -1, createdAt: -1 })
-    .lean()
-  res.json(incomes)
+router.get('/', async (req, res, next) => {
+  try {
+    const incomes = await Income.find({ user: req.userId })
+      .sort({ date: -1, createdAt: -1 })
+      .lean()
+    res.json(incomes)
+  } catch (err) {
+    next(err)
+  }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   const { date, category, description, note, currency, amountOriginal, amountGBP } = req.body || {}
 
   const chosenCurrency = currency || 'GBP'
@@ -23,62 +27,74 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Date, category and amount are required' })
   }
 
-  const gbp = toGBP(originalAmount, chosenCurrency)
-  const income = await Income.create({
-    user: req.userId,
-    date,
-    category,
-    description: description || '',
-    note: note || '',
-    amountGBP: gbp,
-    amountTHB: gbpToThb(gbp),
-    currency: chosenCurrency,
-    amountOriginal: originalAmount,
-    source: 'manual'
-  })
-  res.status(201).json(income)
+  try {
+    const gbp = toGBP(originalAmount, chosenCurrency)
+    const income = await Income.create({
+      user: req.userId,
+      date,
+      category,
+      description: description || '',
+      note: note || '',
+      amountGBP: gbp,
+      amountTHB: gbpToThb(gbp),
+      currency: chosenCurrency,
+      amountOriginal: originalAmount,
+      source: 'manual'
+    })
+    res.status(201).json(income)
+  } catch (err) {
+    next(err)
+  }
 })
 
-router.put('/:id', async (req, res) => {
-  const existing = await Income.findOne({ _id: req.params.id, user: req.userId })
-  if (!existing) return res.status(404).json({ error: 'Not found' })
+router.put('/:id', async (req, res, next) => {
+  try {
+    const existing = await Income.findOne({ _id: req.params.id, user: req.userId })
+    if (!existing) return res.status(404).json({ error: 'Not found' })
 
-  const { date, category, description, note, currency, amountOriginal, amountGBP } = req.body || {}
-  const chosenCurrency = currency || existing.currency || 'GBP'
-  const originalAmount =
-    amountOriginal != null
-      ? Number(amountOriginal)
-      : amountGBP != null
-        ? Number(amountGBP)
-        : existing.amountOriginal
+    const { date, category, description, note, currency, amountOriginal, amountGBP } = req.body || {}
+    const chosenCurrency = currency || existing.currency || 'GBP'
+    const originalAmount =
+      amountOriginal != null
+        ? Number(amountOriginal)
+        : amountGBP != null
+          ? Number(amountGBP)
+          : existing.amountOriginal
 
-  if (!date || !category || !originalAmount || originalAmount <= 0) {
-    return res.status(400).json({ error: 'Date, category and amount are required' })
+    if (!date || !category || !originalAmount || originalAmount <= 0) {
+      return res.status(400).json({ error: 'Date, category and amount are required' })
+    }
+
+    const gbp = toGBP(originalAmount, chosenCurrency)
+    existing.date = date
+    existing.category = category
+    existing.description = description ?? existing.description
+    existing.note = note ?? existing.note
+    existing.currency = chosenCurrency
+    existing.amountOriginal = originalAmount
+    existing.amountGBP = gbp
+    existing.amountTHB = gbpToThb(gbp)
+
+    await existing.save()
+    res.json(existing)
+  } catch (err) {
+    next(err)
   }
-
-  const gbp = toGBP(originalAmount, chosenCurrency)
-  existing.date = date
-  existing.category = category
-  existing.description = description ?? existing.description
-  existing.note = note ?? existing.note
-  existing.currency = chosenCurrency
-  existing.amountOriginal = originalAmount
-  existing.amountGBP = gbp
-  existing.amountTHB = gbpToThb(gbp)
-
-  await existing.save()
-  res.json(existing)
 })
 
-router.delete('/:id', async (req, res) => {
-  const result = await Income.deleteOne({
-    _id: req.params.id,
-    user: req.userId
-  })
-  if (result.deletedCount === 0) {
-    return res.status(404).json({ error: 'Not found' })
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const result = await Income.deleteOne({
+      _id: req.params.id,
+      user: req.userId
+    })
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    res.json({ ok: true })
+  } catch (err) {
+    next(err)
   }
-  res.json({ ok: true })
 })
 
 export default router
