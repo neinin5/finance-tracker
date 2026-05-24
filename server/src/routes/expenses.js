@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
       .lean()
     res.json(expenses)
   } catch (err) {
+    console.error('GET /expenses:', err)
     res.status(500).json({ error: 'Failed to fetch expenses' })
   }
 })
@@ -57,6 +58,7 @@ router.post('/', async (req, res) => {
     const expense = await Expense.create(doc)
     res.status(201).json(expense)
   } catch (err) {
+    console.error('POST /expenses:', err)
     res.status(500).json({ error: 'Failed to create expense' })
   }
 })
@@ -105,6 +107,7 @@ router.put('/:id', async (req, res) => {
     await existing.save()
     res.json(existing)
   } catch (err) {
+    console.error('PUT /expenses/:id:', err)
     res.status(500).json({ error: 'Failed to update expense' })
   }
 })
@@ -120,6 +123,7 @@ router.delete('/:id', async (req, res) => {
     }
     res.json({ ok: true })
   } catch (err) {
+    console.error('DELETE /expenses/:id:', err)
     res.status(500).json({ error: 'Failed to delete expense' })
   }
 })
